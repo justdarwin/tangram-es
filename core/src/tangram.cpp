@@ -121,11 +121,16 @@ void loadScene(const char* _scenePath) {
 
     auto sceneString = stringFromFile(setResourceRoot(_scenePath).c_str(), PathType::resource);
 
+    auto oldScene = m_scene;
+
     // Copy old scene
-    auto scene = std::make_shared<Scene>(*m_scene);
+    auto scene = std::make_shared<Scene>(*oldScene);
 
     if (SceneLoader::loadScene(sceneString, *scene)) {
-        setScene(scene);
+        Tangram::runOnMainLoop([=](){
+                auto newScene = scene;
+                setScene(newScene);
+            });
     }
 }
 
@@ -167,6 +172,21 @@ void resize(int _newWidth, int _newHeight) {
 
 bool update(float _dt) {
 
+    size_t nTasks = 0;
+    {
+        std::lock_guard<std::mutex> lock(m_tasksMutex);
+        nTasks = m_tasks.size();
+    }
+    while (nTasks-- > 0) {
+        std::function<void()> task;
+        {
+            std::lock_guard<std::mutex> lock(m_tasksMutex);
+            task = m_tasks.front();
+            m_tasks.pop();
+        }
+        task();
+    }
+
     FrameInfo::beginUpdate();
 
     g_time += _dt;
@@ -183,21 +203,6 @@ bool update(float _dt) {
     m_inputHandler->update(_dt);
 
     m_view->update();
-
-    size_t nTasks = 0;
-    {
-        std::lock_guard<std::mutex> lock(m_tasksMutex);
-        nTasks = m_tasks.size();
-    }
-    while (nTasks-- > 0) {
-        std::function<void()> task;
-        {
-            std::lock_guard<std::mutex> lock(m_tasksMutex);
-            task = m_tasks.front();
-            m_tasks.pop();
-        }
-        task();
-    }
 
     for (const auto& style : m_scene->styles()) {
         style->onBeginUpdate();

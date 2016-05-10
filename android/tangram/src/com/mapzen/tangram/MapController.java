@@ -618,7 +618,6 @@ public class MapController implements Renderer {
     }
 
     private synchronized native void nativeInit(MapController instance, AssetManager assetManager, String stylePath);
-    private synchronized native void nativeLoadScene(String path);
     private synchronized native void nativeSetupGL();
     private synchronized native void nativeResize(int width, int height);
     private synchronized native boolean nativeUpdate(float dt);
@@ -645,8 +644,10 @@ public class MapController implements Renderer {
     private synchronized native void nativeHandleRotateGesture(float posX, float posY, float rotation);
     private synchronized native void nativeHandleShoveGesture(float distance);
     private synchronized native void nativeQueueSceneUpdate(String componentPath, String value);
-    private synchronized native void nativeApplySceneUpdates();
     private synchronized native void nativePickFeature(float posX, float posY, FeaturePickListener listener);
+
+    private native void nativeLoadScene(String path);
+    private native void nativeApplySceneUpdates();
 
     private native void nativeOnUrlSuccess(byte[] rawDataBytes, long callbackPtr);
     private native void nativeOnUrlFailure(long callbackPtr);
