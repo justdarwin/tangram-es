@@ -46,7 +46,7 @@ int main(int argc, char **argv){
     curl_global_init(CURL_GLOBAL_DEFAULT);
 
     // Set background color and clear buffers
-    map = new Tangram::Map("scene.yaml");
+    map = new Tangram::Map();
     map->loadSceneAsync("scene.yaml");
     map->setupGL();
     map->resize(getWindowWidth(), getWindowHeight());
